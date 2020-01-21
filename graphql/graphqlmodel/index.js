@@ -5,7 +5,12 @@ let Ptype = new GraphQLObjectType({
     fields: {
         id: { type: GraphQLID },
         firstname: { type: GraphQLString },
-        lastname: { type: GraphQLString }
+        lastname: { type: GraphQLString },
+        mobileno: { type: GraphQLString },
+        UserLogin: {
+            EmailId: { type: GraphQLString },
+            Password: {type: GraphQLString}
+        }
     }
 });
 

@@ -6,7 +6,8 @@ let userSchema = new mongoose.Schema({
     UserLogin: {
         EmailId: { type: String },
         Password: {type: String}
-    }
+     }
+       
 });
 
 let User = mongoose.model("users", userSchema);

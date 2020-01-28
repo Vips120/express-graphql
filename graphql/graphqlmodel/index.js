@@ -1,5 +1,12 @@
 let { GraphQLObjectType, GraphQLString, GraphQLID } = require("graphql");
-
+let userLogin = new GraphQLObjectType({
+    name: "Login",
+    fields: {
+        EmailId: { type: GraphQLString },
+        Password:{type: GraphQLString}
+    }
+  
+})
 let Ptype = new GraphQLObjectType({
     name: "Users",
     fields: {
@@ -7,11 +14,8 @@ let Ptype = new GraphQLObjectType({
         firstname: { type: GraphQLString },
         lastname: { type: GraphQLString },
         mobileno: { type: GraphQLString },
-        UserLogin: {
-            EmailId: { type: GraphQLString },
-            Password: {type: GraphQLString}
-        }
+        UserLogin:{type: userLogin}
     }
 });
-
+ 
 module.exports = Ptype;

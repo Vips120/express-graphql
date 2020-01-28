@@ -1,4 +1,6 @@
 let { GraphQLObjectType, GraphQLList, GraphQLID, GraphQLString,GraphQLNonNull,GraphQLInputObjectType} = require("graphql");
+let bcrypt = require("bcrypt");
+let jwt = require("jsonwebtoken");
 let PersonType = require("./graphqlmodel/index");
 let User = require("../model/index");
 let Fetchuser = new GraphQLObjectType({
@@ -45,10 +47,12 @@ let createUser = new GraphQLObjectType({
                 }
             },
             resolve: async (source, args, context, info) => {
-                console.log(args);
+                  
                 let user = await User.findOne({ "UserLogin.EmailId": args.UserLogin.EmailId });
                 if (user) { throw new Error("user already in database") };
                 let data = new User(args);
+                let salt = await bcrypt.genSalt(10);
+                data.UserLogin.Password = await bcrypt.hash(data.UserLogin.Password, salt);
                 return await data.save();
             }
         },
@@ -56,16 +60,18 @@ let createUser = new GraphQLObjectType({
         auth: {
             type: PersonType,
             args: {
-                UserLogin:{type: new GraphQLNonNull(Login)}
+                UserLogin: { type: new GraphQLNonNull(Login) }
             },
             resolve: async (parentvalue, args, context) => {
                 let user = await User.findOne({"UserLogin.EmailId": args.UserLogin.EmailId });
                 if (!user) { throw new Error("invalid email id") };
-                let password = await User.findOne({ "UserLogin.Password": args.UserLogin.Password });
-                if (!password) { throw new Error("invalid password") };
-                return user;
+                // let password = await User.findOne({ "UserLogin.Password": args.UserLogin.Password });
+                // if (!password) { throw new Error("invalid password") };
+                let password = await bcrypt.compare(args.UserLogin.Password,user.UserLogin.Password);
+                if (!password) { throw new Error("Invalid password") };
+                let token = jwt.sign({ _id: user._id, }, "JWTPRIVATEKEY");
+                return token;
             }
-    
         },
         updateuser: {
             type: PersonType,
@@ -88,8 +94,8 @@ let createUser = new GraphQLObjectType({
             args: {
                 id: { type: GraphQLNonNull(GraphQLID) }
             },
-            resolve: (source, args, context, info) => {
-                let data = User.findById(arg.id);
+            resolve: async (source, args, context, info) => {
+                let data = await User.findById(arg.id);
                 if (!data) { throw new Error("invalid user id") };
                 return data.findOneAndRemove(data);
             }
